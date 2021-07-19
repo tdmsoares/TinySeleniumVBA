@@ -465,8 +465,31 @@ Private Function SendRequest(method As String, url As String, Optional data As D
     client.Open method, url
     
     If method = "POST" Or method = "PUT" Then
-        client.setRequestHeader "Content-Type", "application/json"
-        client.send JsonConverter.ConvertToJson(data)
+        client.setRequestHeader "Content-Type", "application/json; charset=utf-8"
+		Dim strJsonRequest As String
+		strJsonRequest = JsonConverter.ConvertToJson(data)
+		Debug.Print (strJsonRequest)
+		        '
+        'If sessionId is not in url, it presumes it will start a new Chrome Browser, so it can send custom Json Requests
+        'All the code under the If bellow works fine in setting a custom user-data-dir
+        If (url = "http://localhost:9515/session") Then
+            '
+            'Examples
+            '
+            'Full Capabilities
+            strJsonRequest = "{""capabilities"":{""firstMatch"":[{""browserName"":""chrome"",""goog:chromeOptions"":{""args"":[""user-data-dir=D:\\Profiles\\tdmsoares\\Desktop\\tmpChromeUserData\\User Data""],""excludeSwitches"":[""enable-automation""],""extensions"":[],""prefs"":{""credentials_enable_service"":false,""profile.default_content_setting_values.notifications"":1,""profile.default_content_settings.popups"":0,""profile.password_manager_enabled"":false}}}]},""desiredCapabilities"":{""browserName"":""chrome"",""goog:chromeOptions"":{""args"":[],""excludeSwitches"":[""enable-automation""],""extensions"":[],""prefs"":{""credentials_enable_service"":false,""profile.default_content_setting_values.notifications"":1,""profile.default_content_settings.popups"":0,""profile.password_manager_enabled"":false}}}}"
+            '
+            'First Match with browserName and goog:chromeOptions args --user-data-dir
+            strJsonRequest = "{""capabilities"":{""firstMatch"":[{""browserName"":""chrome"",""goog:chromeOptions"":{""args"": [""user-data-dir=D:\\Profiles\\tdmsoares\\Desktop\\tmpChromeUserData\\User Data""]}}]}}"
+            '
+            'First Match with with goog:chromeOptions args --user-data-dir
+            strJsonRequest = "{""capabilities"":{""firstMatch"":[{""goog:chromeOptions"":{""args"": [""user-data-dir=D:\\Profiles\\tdmsoares\\Desktop\\tmpChromeUserData\\User Data""]}}]}}"
+            '
+            'Always Match with with goog:chromeOptions args --user-data-dir
+            strJsonRequest = "{""capabilities"":{""alwaysMatch"":{""goog:chromeOptions"":{""args"": [""user-data-dir=D:\\Profiles\\tdmsoares\\Desktop\\tmpChromeUserData\\User Data""]}}}}"
+            Debug.Print strJsonRequest
+        End If
+        client.send strJsonRequest
     Else
         client.send
     End If
